@@ -28,42 +28,54 @@ function initModels(sequelize) {
   var tb_users = _tb_users(sequelize, DataTypes);
   var tb_watch_histories = _tb_watch_histories(sequelize, DataTypes);
 
-  tb_content.belongsToMany(tb_genres, { as: 'genre_id_tb_genres', through: tb_content_genres, foreignKey: "content_id", otherKey: "genre_id" });
-  tb_content.belongsToMany(tb_playlist, { as: 'playlist_id_tb_playlists', through: tb_playlist_item, foreignKey: "content_id", otherKey: "playlist_id" });
-  tb_genres.belongsToMany(tb_content, { as: 'content_id_tb_contents', through: tb_content_genres, foreignKey: "genre_id", otherKey: "content_id" });
-  tb_playlist.belongsToMany(tb_content, { as: 'content_id_tb_content_tb_playlist_items', through: tb_playlist_item, foreignKey: "playlist_id", otherKey: "content_id" });
-  tb_content_credits.belongsTo(tb_content, { as: "content", foreignKey: "content_id"});
-  tb_content.hasMany(tb_content_credits, { as: "tb_content_credits", foreignKey: "content_id"});
-  tb_content_genres.belongsTo(tb_content, { as: "content", foreignKey: "content_id"});
-  tb_content.hasMany(tb_content_genres, { as: "tb_content_genres", foreignKey: "content_id"});
-  tb_movies.belongsTo(tb_content, { as: "content", foreignKey: "content_id"});
-  tb_content.hasOne(tb_movies, { as: "tb_movie", foreignKey: "content_id"});
-  tb_movies.belongsTo(tb_content, { as: "content_type_tb_content", foreignKey: "content_type"});
-  tb_content.hasMany(tb_movies, { as: "content_type_tb_movies", foreignKey: "content_type"});
-  tb_playlist_item.belongsTo(tb_content, { as: "content", foreignKey: "content_id"});
-  tb_content.hasMany(tb_playlist_item, { as: "tb_playlist_items", foreignKey: "content_id"});
-  tb_series.belongsTo(tb_content, { as: "content", foreignKey: "content_id"});
-  tb_content.hasOne(tb_series, { as: "tb_sery", foreignKey: "content_id"});
-  tb_series.belongsTo(tb_content, { as: "content_type_tb_content", foreignKey: "content_type"});
-  tb_content.hasMany(tb_series, { as: "content_type_tb_series", foreignKey: "content_type"});
-  tb_watch_histories.belongsTo(tb_episodes, { as: "episode", foreignKey: "episode_id"});
-  tb_episodes.hasOne(tb_watch_histories, { as: "tb_watch_history", foreignKey: "episode_id"});
-  tb_content_genres.belongsTo(tb_genres, { as: "genre", foreignKey: "genre_id"});
-  tb_genres.hasMany(tb_content_genres, { as: "tb_content_genres", foreignKey: "genre_id"});
-  tb_watch_histories.belongsTo(tb_movies, { as: "movie", foreignKey: "movie_id"});
-  tb_movies.hasMany(tb_watch_histories, { as: "tb_watch_histories", foreignKey: "movie_id"});
-  tb_content_credits.belongsTo(tb_persons, { as: "person", foreignKey: "person_id"});
-  tb_persons.hasMany(tb_content_credits, { as: "tb_content_credits", foreignKey: "person_id"});
-  tb_playlist_item.belongsTo(tb_playlist, { as: "playlist", foreignKey: "playlist_id"});
-  tb_playlist.hasMany(tb_playlist_item, { as: "tb_playlist_items", foreignKey: "playlist_id"});
-  tb_episodes.belongsTo(tb_seasons, { as: "season", foreignKey: "season_id"});
-  tb_seasons.hasMany(tb_episodes, { as: "tb_episodes", foreignKey: "season_id"});
-  tb_seasons.belongsTo(tb_series, { as: "series", foreignKey: "series_id"});
-  tb_series.hasMany(tb_seasons, { as: "tb_seasons", foreignKey: "series_id"});
-  tb_playlist.belongsTo(tb_users, { as: "user", foreignKey: "user_id"});
-  tb_users.hasMany(tb_playlist, { as: "tb_playlists", foreignKey: "user_id"});
-  tb_watch_histories.belongsTo(tb_users, { as: "user", foreignKey: "user_id"});
-  tb_users.hasMany(tb_watch_histories, { as: "tb_watch_histories", foreignKey: "user_id"});
+  // Many-to-Many Associations
+  tb_content.belongsToMany(tb_genres, { as: 'genres', through: tb_content_genres, foreignKey: "content_id", otherKey: "genre_id" });
+  tb_content.belongsToMany(tb_playlist, { as: 'playlists', through: tb_playlist_item, foreignKey: "content_id", otherKey: "playlist_id" });
+  tb_genres.belongsToMany(tb_content, { as: 'contents', through: tb_content_genres, foreignKey: "genre_id", otherKey: "content_id" });
+  tb_playlist.belongsToMany(tb_content, { as: 'contents', through: tb_playlist_item, foreignKey: "playlist_id", otherKey: "content_id" });
+
+  // One-to-One & One-to-Many Associations
+  tb_content_credits.belongsTo(tb_content, { as: "content", foreignKey: "content_id" });
+  tb_content.hasMany(tb_content_credits, { as: "content_credits", foreignKey: "content_id" });
+
+  tb_content_genres.belongsTo(tb_content, { as: "content", foreignKey: "content_id" });
+  tb_content.hasMany(tb_content_genres, { as: "content_genres", foreignKey: "content_id" });
+
+  tb_movies.belongsTo(tb_content, { as: "content", foreignKey: "content_id" });
+  tb_content.hasOne(tb_movies, { as: "movie", foreignKey: "content_id" });
+
+  tb_playlist_item.belongsTo(tb_content, { as: "content", foreignKey: "content_id" });
+  tb_content.hasMany(tb_playlist_item, { as: "playlist_items", foreignKey: "content_id" });
+
+  tb_series.belongsTo(tb_content, { as: "content", foreignKey: "content_id" });
+  tb_content.hasOne(tb_series, { as: "series", foreignKey: "content_id" });
+
+  tb_watch_histories.belongsTo(tb_episodes, { as: "episode", foreignKey: "episode_id" });
+  tb_episodes.hasMany(tb_watch_histories, { as: "watch_histories", foreignKey: "episode_id" });
+
+  tb_content_genres.belongsTo(tb_genres, { as: "genre", foreignKey: "genre_id" });
+  tb_genres.hasMany(tb_content_genres, { as: "content_genres", foreignKey: "genre_id" });
+
+  tb_watch_histories.belongsTo(tb_movies, { as: "movie", foreignKey: "movie_id" });
+  tb_movies.hasMany(tb_watch_histories, { as: "watch_histories", foreignKey: "movie_id" });
+
+  tb_content_credits.belongsTo(tb_persons, { as: "person", foreignKey: "person_id" });
+  tb_persons.hasMany(tb_content_credits, { as: "content_credits", foreignKey: "person_id" });
+
+  tb_playlist_item.belongsTo(tb_playlist, { as: "playlist", foreignKey: "playlist_id" });
+  tb_playlist.hasMany(tb_playlist_item, { as: "playlist_items", foreignKey: "playlist_id" });
+
+  tb_episodes.belongsTo(tb_seasons, { as: "season", foreignKey: "season_id" });
+  tb_seasons.hasMany(tb_episodes, { as: "episodes", foreignKey: "season_id" });
+
+  tb_seasons.belongsTo(tb_series, { as: "series", foreignKey: "series_id" });
+  tb_series.hasMany(tb_seasons, { as: "seasons", foreignKey: "series_id" });
+
+  tb_playlist.belongsTo(tb_users, { as: "user", foreignKey: "user_id" });
+  tb_users.hasMany(tb_playlist, { as: "playlists", foreignKey: "user_id" });
+
+  tb_watch_histories.belongsTo(tb_users, { as: "user", foreignKey: "user_id" });
+  tb_users.hasMany(tb_watch_histories, { as: "watch_histories", foreignKey: "user_id" });
 
   return {
     tb_content,
